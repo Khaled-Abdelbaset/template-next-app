@@ -1,0 +1,105 @@
+# Copy to .github/workflows/discord-notify.yml — standards v1.0.0
+# Requires secret DISCORD_WEBHOOK_URL
+name: Discord Notify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  push-or-merge:
+    if: |
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post to Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          EVENT: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          SHA: ${{ github.sha }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DISCORD_WEBHOOK:-}" ]; then
+            echo "DISCORD_WEBHOOK_URL not set; skipping."
+            exit 0
+          fi
+          if [ "$EVENT" = "push" ]; then
+            TITLE="Pushed to main"
+            DESC="${COMMIT_MSG:-$SHA}"
+            URL="https://github.com/${REPO}/commit/${SHA}"
+            COLOR=5763719
+          else
+            TITLE="PR #${PR_NUMBER} merged to main"
+            DESC="${PR_TITLE}"
+            URL="${PR_URL}"
+            COLOR=3447003
+          fi
+          PAYLOAD=$(TITLE="$TITLE" DESC="$DESC" URL="$URL" COLOR="$COLOR" REPO="$REPO" ACTOR="$ACTOR" python3 -c "
+          import json, os
+          print(json.dumps({
+            'username': 'Focus Planner',
+            'embeds': [{
+              'title': os.environ['TITLE'],
+              'description': (os.environ['DESC'] or '')[:2000],
+              'url': os.environ['URL'],
+              'color': int(os.environ['COLOR']),
+              'fields': [
+                {'name': 'Repo', 'value': os.environ['REPO'], 'inline': True},
+                {'name': 'By', 'value': os.environ['ACTOR'], 'inline': True},
+              ],
+            }]
+          }))
+          ")
+          curl -fsS -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK"
+
+  ci-failure:
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post CI failure
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          ACTOR: ${{ github.event.workflow_run.actor.login }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DISCORD_WEBHOOK:-}" ]; then exit 0; fi
+          PAYLOAD=$(REPO="$REPO" RUN_URL="$RUN_URL" BRANCH="$BRANCH" ACTOR="$ACTOR" python3 -c "
+          import json, os
+          print(json.dumps({
+            'username': 'Focus Planner',
+            'embeds': [{
+              'title': 'CI failed on main',
+              'description': os.environ['BRANCH'],
+              'url': os.environ['RUN_URL'],
+              'color': 15548997,
+              'fields': [
+                {'name': 'Repo', 'value': os.environ['REPO'], 'inline': True},
+                {'name': 'By', 'value': os.environ['ACTOR'], 'inline': True},
+              ],
+            }]
+          }))
+          ")
+          curl -fsS -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK"

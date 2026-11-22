@@ -1,0 +1,29 @@
+---
+description: Git branches, commits, and PR workflow (Khaled-Abdelbaset org)
+alwaysApply: true
+---
+
+# Git workflow
+
+**Handbook:** https://github.com/Khaled-Abdelbaset/engineering-standards/blob/main/docs/GIT_WORKFLOW.md  
+**Commit email:** https://github.com/Khaled-Abdelbaset/engineering-standards/blob/main/docs/GIT_IDENTITY.md
+
+## Commits
+
+- Conventional Commits: `feat(scope): …`, `fix(scope): …`, `chore(scope): …`.
+- Do **not** commit unless the user explicitly asks. Do **not** `git config`, force-push `main`, or skip hooks.
+- Never commit `.env`, secrets, `dist/`, `.next/`, or `tsconfig.tsbuildinfo`.
+
+## Branches
+
+- Branch from `main`: `feat/`, `fix/`, `chore/`, `docs/`.
+- No direct commits to `main`; use PRs.
+
+## CI
+
+- Reusable workflow: `Khaled-Abdelbaset/engineering-standards/.github/workflows/reusable-node-ci.yml@v1.0.0`
+
+## Pull requests
+
+- Summary + test plan + cross-repo links when API changes.
+- Squash merge to `main`. Backend before frontend on breaking API changes.
