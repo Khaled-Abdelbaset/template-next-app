@@ -5,7 +5,9 @@ alwaysApply: true
 
 # Git workflow
 
+**Canonical for all agents:** repo root `AGENTS.md`  
 **Handbook:** https://github.com/Khaled-Abdelbaset/engineering-standards/blob/main/docs/GIT_WORKFLOW.md  
+**Agent layering:** https://github.com/Khaled-Abdelbaset/engineering-standards/blob/main/docs/AGENT_INSTRUCTIONS.md  
 **Commit email:** https://github.com/Khaled-Abdelbaset/engineering-standards/blob/main/docs/GIT_IDENTITY.md
 
 ## Commits
@@ -27,3 +29,7 @@ alwaysApply: true
 
 - Summary + test plan + cross-repo links when API changes.
 - Squash merge to `main`. Backend before frontend on breaking API changes.
+
+## Multi-phase work
+
+- One branch + one PR per phase; see handbook §11 and repo tracker docs when present.

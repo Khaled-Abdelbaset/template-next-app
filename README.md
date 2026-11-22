@@ -12,7 +12,7 @@ Minimal **[Next.js](https://nextjs.org/)** 15 (App Router) app with org **CI** a
 - TypeScript strict config
 - `.github/workflows/ci.yml` → reusable Next CI (`flavor: next`, `@v1.0.0`)
 - `.github/workflows/discord-notify.yml`
-- [CONTRIBUTING.md](CONTRIBUTING.md), PR template, Cursor git rule
+- [CONTRIBUTING.md](CONTRIBUTING.md), PR template, **`AGENTS.md`** + **`CLAUDE.md`**, Cursor & Claude git rules
 
 ---
 
